@@ -1,0 +1,1 @@
+**para ver nuestra documentacion de la api con swagger basado en los estandares abiertos de OpenAPI, basta con agregar en nuestro link en el navegador /docs, y nos desplegara una interfaz donde podemos probar nuestras diferentes rutas y ver las versiones de nuestra API.**
