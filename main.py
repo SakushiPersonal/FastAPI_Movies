@@ -13,6 +13,14 @@ movies = [
     "year": "2069",
     "rating": 8.9,
     "category": "+18"
+    },
+    {
+    "id": 2,
+    "title": "Secret Room 2",
+    "overview": "All our secrets together in this room at the sorrow night",
+    "year": "2169",
+    "rating": 6.8,
+    "category": "+18"
     }
 ]
 
@@ -23,3 +31,10 @@ def message():
 @app.get('/movies', tags=['movies'])
 def get_movies():
     return movies
+
+@app.get('/movies/{id}', tags=['movies'])
+def get_movie(id: int):
+    for movie in movies:
+        if movie["id"] == id:
+            return movie
+    return []
