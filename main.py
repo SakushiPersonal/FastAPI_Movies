@@ -38,3 +38,8 @@ def get_movie(id: int):
         if movie["id"] == id:
             return movie
     return []
+
+@app.get('/movies/', tags=['movies'])#to diferenciate from movies, just add an "/" at the end of the name
+def get_movie_by_category(category: str):#if I define on the function a parameter but not in the decorator, then automatically is defined as a query request
+    return category
+
