@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Body, Path, Query
+from fastapi import FastAPI, Body, Path, Query, status
 from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel, Field
 from typing import Optional, List
@@ -51,43 +51,43 @@ movies = [
 
 
 #home
-@app.get('/', tags=['home'])#With tags we can separate our diferents routes by name to identify them easily.
+@app.get('/', tags=['home'], status_code=status.HTTP_200_OK)#With tags we can separate our diferents routes by name to identify them easily.
 def message():
-    return HTMLResponse('<h1>Hello world!</h1>')
+    return HTMLResponse(status_code=status.HTTP_200_OK, content='<h1>Hello world!</h1>')
 
 
 #get all movies
-@app.get('/movies', tags=['movies'], response_model=List[Movie])
+@app.get('/movies', tags=['movies'], response_model=List[Movie], status_code=status.HTTP_200_OK)
 def get_movies() -> List[Movie]:
-    return JSONResponse(content=movies)
+    return JSONResponse(status_code=status.HTTP_200_OK, content=movies)
 
 
 #get a movie by id
-@app.get('/movies/{id}', tags=['movies'], response_model=Movie)
+@app.get('/movies/{id}', tags=['movies'], response_model=Movie, status_code=status.HTTP_200_OK)
 def get_movie(id: int=Path(ge=1, le=200)) -> Movie:
     for movie in movies:
         if movie["id"] == id:
-            return JSONResponse(content=movie)
-    return JSONResponse(content={"message": "Couldn't find your movie, try another id"})
+            return JSONResponse(status_code=status.HTTP_200_OK, content=movie)
+    return JSONResponse(status_code=status.HTTP_404_NOT_FOUND content={"message": "Couldn't find your movie, try another id"})
 
 
 #get a movie by category
-@app.get('/movies/', tags=['movies'], response_model=List[Movie])#to diferenciate from movies, just add an "/" at the end of the name
+@app.get('/movies/', tags=['movies'], response_model=List[Movie], status_code=status.HTTP_200_OK)#to diferenciate from movies, just add an "/" at the end of the name
 def get_movie_by_category(category: str = Query(min_length=4, max_length=15)) -> List[Movie]:#if I define on the function a parameter but not in the decorator, then automatically is defined as a query request
     movie = list(filter(lambda movie: movie["category"] == category, movies))
-    return JSONResponse(content=movie)
+    return JSONResponse(status_code=status.HTTP_200_OK, content=movie)
 
 
 #Create a new movie
-@app.post('/movies', tags=['movies'], response_model=dict)
+@app.post('/movies', tags=['movies'], response_model=dict, status_code=status.HTTP_200_OK)
 def create_movie(movie: Movie) -> dict:
     movies.append(movie)
 
-    return JSONResponse(content={"message": "Movie created successfully!"})
+    return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Movie created successfully!"})
 
 
 #Modify an existing movie
-@app.put('/movies/{id}',  tags=['movies'], response_model=dict)
+@app.put('/movies/{id}',  tags=['movies'], response_model=dict, status_code=status.HTTP_200_OK)
 def update_movie(id:int, movie: Movie) ->dict:
     for mov in movies:
         if mov["id"] == id:
@@ -97,15 +97,15 @@ def update_movie(id:int, movie: Movie) ->dict:
             mov["rating"] = movie.rating
             mov["category"] = movie.category
 
-            return JSONResponse(content={"message": "Changes saved successfully"})
+            return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Changes saved successfully"})
     
-    return JSONResponse(content={"message": "Movie doesn't exist, please verify your id"})
+    return JSONResponse(status_code=status.HTTP_404_NOT_FOUND content={"message": "Movie doesn't exist, please verify your id"})
 
 
 #Delete a movie by id
-@app.delete('/movies/{id}', tags=['movies'], response_model=dict)
+@app.delete('/movies/{id}', tags=['movies'], response_model=dict, status_code=status.HTTP_200_OK)
 def delete_movie(id:int) -> dict:
     for movie in movies:
         if movie["id"] == id:
             movies.remove(movie)
-            return JSONResponse(content={"message": "Movie deleted successfully!"})
+            return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Movie deleted successfully!"})
