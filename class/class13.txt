@@ -1,0 +1,1 @@
+****With response_model and defining a return example of our function, in the documentation we can see in any of our routes where we apply them an example of what our route will return us.*****
