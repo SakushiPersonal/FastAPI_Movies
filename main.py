@@ -1,9 +1,9 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Body
 from fastapi.responses import HTMLResponse
 
 app = FastAPI()
 app.title = "First FastAPI App " #Here we select the title of our App
-app.version = "0.0.2" #Here we can indicate our actual app version 
+app.version = "0.0.5" #Here we can indicate our actual app version 
 
 movies = [
     {
@@ -20,7 +20,7 @@ movies = [
     "overview": "All our secrets together in this room at the sorrow night",
     "year": "2169",
     "rating": 6.8,
-    "category": "+18"
+    "category": "++18"
     }
 ]
 
@@ -41,5 +41,20 @@ def get_movie(id: int):
 
 @app.get('/movies/', tags=['movies'])#to diferenciate from movies, just add an "/" at the end of the name
 def get_movie_by_category(category: str):#if I define on the function a parameter but not in the decorator, then automatically is defined as a query request
-    return category
+    movie = list(filter(lambda movie: movie["category"] == category, movies))
+    return movie
 
+@app.post('/movies', tags=['movies'])
+def create_movie(id:int=Body(), title:str=Body(), overview:str=Body(), year:str=Body(), rating:int=Body(), category:str=Body()):
+    movies.append(
+        {
+        "id":id,
+        "title":title,
+        "overview":overview,
+        "year":year,
+        "rating":rating,
+        "category":category
+        }
+    )
+
+    return movies
