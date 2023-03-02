@@ -29,7 +29,7 @@ Creamos entorno virtual
 
 **En nuestra consola escribimos:**
 
-    uvicorn main:app --reload --port 6000 --host 0.0.0.0
+    uvicorn main:app --reload --port 8000 --host 0.0.0.0
 
 > reload : para que al hacer cambios en la api se apliquen autimaticamente.
 > port: podedmos elegir el puerto donde se levantara nuestra api con nuestra IP 
