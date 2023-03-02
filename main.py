@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Body
+from fastapi import FastAPI, Body, Path, Query
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 from typing import Optional
@@ -12,8 +12,8 @@ class Movie(BaseModel):
     title: str = Field(min_length=4, max_length=20)
     overview: str = Field(min_length=15, max_length=100)
     year: int = Field(le=2023)
-    rating: float = Field(le =10.0)
-    category: str = Field(max_length=10)
+    rating: float = Field(ge=1, le =10.0)
+    category: str = Field(min_length=3, max_length=10)
 
     class Config:
         schema_extra = {
@@ -55,14 +55,14 @@ def get_movies():
     return movies
 
 @app.get('/movies/{id}', tags=['movies'])
-def get_movie(id: int):
+def get_movie(id: int=Path(ge=1, le=200)):
     for movie in movies:
         if movie["id"] == id:
             return movie
     return []
 
 @app.get('/movies/', tags=['movies'])#to diferenciate from movies, just add an "/" at the end of the name
-def get_movie_by_category(category: str):#if I define on the function a parameter but not in the decorator, then automatically is defined as a query request
+def get_movie_by_category(category: str = Query(min_length=4, max_length=15)):#if I define on the function a parameter but not in the decorator, then automatically is defined as a query request
     movie = list(filter(lambda movie: movie["category"] == category, movies))
     return movie
 
