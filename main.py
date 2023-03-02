@@ -1,9 +1,19 @@
 from fastapi import FastAPI, Body
 from fastapi.responses import HTMLResponse
+from pydantic import BaseModel
+from typing import Optional
 
 app = FastAPI()
 app.title = "First FastAPI App " #Here we select the title of our App
 app.version = "0.0.5" #Here we can indicate our actual app version 
+
+class Movie(BaseModel):
+    id: Optional[int] = None
+    title: str
+    overview: str
+    year: int
+    rating: float
+    category: str
 
 movies = [
     {
@@ -45,32 +55,23 @@ def get_movie_by_category(category: str):#if I define on the function a paramete
     return movie
 
 @app.post('/movies', tags=['movies'])
-def create_movie(id:int=Body(), title:str=Body(), overview:str=Body(), year:str=Body(), rating:int=Body(), category:str=Body()):
-    movies.append(
-        {
-        "id":id,
-        "title":title,
-        "overview":overview,
-        "year":year,
-        "rating":rating,
-        "category":category
-        }
-    )
+def create_movie(movie: Movie):
+    movies.append(movie)
 
     return movies
 
 
 @app.put('/movies/{id}',  tags=['movies'])
-def update_movie(id:int, title:str=Body(), overview:str=Body(), year:str=Body(), rating:int=Body(), category:str=Body()):
-    for movie in movies:
-        if movie["id"] == id:
-            movie["title"] = title
-            movie["overview"] = overview
-            movie["year"] = year
-            movie["rating"] = rating
-            movie["category"] = category
+def update_movie(id:int, movie: Movie):
+    for mov in movies:
+        if mov["id"] == id:
+            mov["title"] = movie.title
+            mov["overview"] = movie.overview
+            mov["year"] = movie.year
+            mov["rating"] = movie.rating
+            mov["category"] = movie.category
 
-        return movies
+            return movies
     
 
 @app.delete('/movies/{id}', tags=['movies'])
