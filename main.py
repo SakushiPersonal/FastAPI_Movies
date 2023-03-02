@@ -2,10 +2,16 @@ from fastapi import FastAPI, Body, Path, Query, status
 from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel, Field
 from typing import Optional, List
+from jwt_manager import create_token
 
 app = FastAPI()
 app.title = "First FastAPI App " #Here we select the title of our App
 app.version = "0.0.5" #Here we can indicate our actual app version 
+
+
+class User(BaseModel):
+    email:str
+    password:str
 
 
 class Movie(BaseModel):
@@ -68,7 +74,7 @@ def get_movie(id: int=Path(ge=1, le=200)) -> Movie:
     for movie in movies:
         if movie["id"] == id:
             return JSONResponse(status_code=status.HTTP_200_OK, content=movie)
-    return JSONResponse(status_code=status.HTTP_404_NOT_FOUND content={"message": "Couldn't find your movie, try another id"})
+    return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"message": "Couldn't find your movie, try another id"})
 
 
 #get a movie by category
@@ -99,7 +105,7 @@ def update_movie(id:int, movie: Movie) ->dict:
 
             return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Changes saved successfully"})
     
-    return JSONResponse(status_code=status.HTTP_404_NOT_FOUND content={"message": "Movie doesn't exist, please verify your id"})
+    return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"message": "Movie doesn't exist, please verify your id"})
 
 
 #Delete a movie by id
@@ -109,3 +115,7 @@ def delete_movie(id:int) -> dict:
         if movie["id"] == id:
             movies.remove(movie)
             return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Movie deleted successfully!"})
+        
+@app.post('/login', tags=['auth'])
+def login(user:User):
+    return user
