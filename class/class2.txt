@@ -1,0 +1,36 @@
+**Instalación de FastAPI y creación de tu primera aplicación
+Creamos entorno virtual
+**
+    py -m venv venv
+
+**Activamos entorno virtual**
+
+    .\venv\Scripts\activate
+
+**Instalamos módulos**
+
+    pip install fastapi uvicorn
+
+**Creamos nuestra primer app con FastAPI**
+
+********************************************
+
+    from fastapi import FastAPI
+
+    app = FastAPI()
+
+    @app.get("/")
+    def read_root():
+        return {"Hello": "World"}
+
+**********************************************
+
+**Corremos la app en un server.**
+
+**En nuestra consola escribimos:**
+
+    uvicorn main:app --reload --port 8000 --host 0.0.0.0
+
+> reload : para que al hacer cambios en la api se apliquen autimaticamente.
+> port: podedmos elegir el puerto donde se levantara nuestra api con nuestra IP 
+> host: con host 0.0.0.0 podremos habilitar que cualquier dispositivo, ingresando nuestra ip y el puerto pueda ver nuestra api en la web.
