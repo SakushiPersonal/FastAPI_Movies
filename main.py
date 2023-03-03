@@ -118,4 +118,6 @@ def delete_movie(id:int) -> dict:
         
 @app.post('/login', tags=['auth'])
 def login(user:User):
-    return user
+    if user.email == "admin@gmail.com" and user.password == "admin":
+        token:str = create_token(user.dict())
+    return JSONResponse(status_code=status.HTTP_200_OK, content=token)
