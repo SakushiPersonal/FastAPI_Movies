@@ -5,7 +5,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 #Se guardara el nombre de la base de datos
 
-sqlite_file_name = "database.sqlite"
+sqlite_file_name = "../database.sqlite"
 
 #Se lera el directorio actual del archivo database
 
