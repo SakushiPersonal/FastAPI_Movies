@@ -1,27 +1,21 @@
-from fastapi import FastAPI, Body, Path, Query, status, Request, HTTPException, Depends
+from fastapi import FastAPI, Path, Query, status, HTTPException, Depends
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel, Field
 from typing import Optional, List
-from jwt_manager import create_token, validate_token
-from fastapi.security import HTTPBearer
+from jwt_manager import create_token
 from config.database import Session, engine, Base
 from models.movie import Movie as MovieModel
+from middleware.error_handler import ErrorHandler
+from middleware.jwt_bearer import JWTBearer
 
 app = FastAPI()
 app.title = "First FastAPI App " #Here we select the title of our App
 app.version = "0.0.5" #Here we can indicate our actual app version 
+app.add_middleware(ErrorHandler)
 
 
-Base.metadata.create_all(bind=engine)
-
-class JWTBearer(HTTPBearer):
-    async def __call__(self, request: Request):
-        auth = await super().__call__(request)
-        data = validate_token(auth.credentials)
-        if data['email'] != "admin@gmail.com":
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid Credentials! >:c ")
-        
+Base.metadata.create_all(bind=engine)  
 
 class User(BaseModel):
     email:str
@@ -85,7 +79,7 @@ def get_movies() -> List[Movie]:
 
 
 #get a movie by id
-@app.get('/movies/{id}', tags=['movies'], response_model=Movie, status_code=status.HTTP_200_OK)
+@app.get('/movies/{id}', tags=['movies'], response_model=Movie, status_code=status.HTTP_200_OK, dependencies=[Depends(JWTBearer())])
 def get_movie(id: int=Path(ge=1, le=200)) -> Movie:
     db = Session()
     result = db.query(MovieModel).filter(MovieModel.id == id).first()
@@ -97,7 +91,7 @@ def get_movie(id: int=Path(ge=1, le=200)) -> Movie:
 
 
 #get a movie by category
-@app.get('/movies/', tags=['movies'], response_model=List[Movie], status_code=status.HTTP_200_OK)#to diferenciate from movies, just add an "/" at the end of the name
+@app.get('/movies/', tags=['movies'], response_model=List[Movie], status_code=status.HTTP_200_OK, dependencies=[Depends(JWTBearer())])#to diferenciate from movies, just add an "/" at the end of the name
 def get_movie_by_category(category: str = Query(min_length=2, max_length=15)) -> List[Movie]:#if I define on the function a parameter but not in the decorator, then automatically is defined as a query request
     db = Session()
     result = db.query(MovieModel).filter(MovieModel.category == category).all()
@@ -105,7 +99,7 @@ def get_movie_by_category(category: str = Query(min_length=2, max_length=15)) ->
 
 
 #Create a new movie
-@app.post('/movies', tags=['movies'], response_model=dict, status_code=status.HTTP_200_OK)
+@app.post('/movies', tags=['movies'], response_model=dict, status_code=status.HTTP_200_OK, dependencies=[Depends(JWTBearer())])
 def create_movie(movie: Movie) -> dict:
     # Paso 1
     db = Session()
@@ -119,7 +113,7 @@ def create_movie(movie: Movie) -> dict:
 
 
 #Modify an existing movie
-@app.put('/movies/{id}',  tags=['movies'], response_model=dict, status_code=status.HTTP_200_OK)
+@app.put('/movies/{id}',  tags=['movies'], response_model=dict, status_code=status.HTTP_200_OK, dependencies=[Depends(JWTBearer())])
 def update_movie(id:int, movie: Movie) ->dict:
     db =Session()
     result = db.query(MovieModel).filter(MovieModel.id == id).first()
@@ -139,7 +133,7 @@ def update_movie(id:int, movie: Movie) ->dict:
 
 
 #Delete a movie by id
-@app.delete('/movies/{id}', tags=['movies'], response_model=dict, status_code=status.HTTP_200_OK)
+@app.delete('/movies/{id}', tags=['movies'], response_model=dict, status_code=status.HTTP_200_OK, dependencies=[Depends(JWTBearer())])
 def delete_movie(id:int) -> dict:
     db =Session()
     result = db.query(MovieModel).filter(MovieModel.id == id).first()
