@@ -1,0 +1,5 @@
+QUE ES UN ORM:
+    Es una libreria que nos permite la manipulacion de tablas de una base de datos como si fueran ob jetos de nustra app.
+
+    SQLAlchemy:
+        Libreria para Python que facilita el acceso a una base de datos re;acional mapeando tablas SQL a clases.
