@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Body, Path, Query, status, Request, HTTPException, Depends
+from fastapi.encoders import jsonable_encoder
 from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel, Field
 from typing import Optional, List
@@ -78,23 +79,29 @@ def message():
 #get all movies
 @app.get('/movies', tags=['movies'], response_model=List[Movie], status_code=status.HTTP_200_OK, dependencies=[Depends(JWTBearer())])
 def get_movies() -> List[Movie]:
-    return JSONResponse(status_code=status.HTTP_200_OK, content=movies)
+    db =Session()
+    result = db.query(MovieModel).all()
+    return JSONResponse(status_code=status.HTTP_200_OK, content=jsonable_encoder(result))
 
 
 #get a movie by id
 @app.get('/movies/{id}', tags=['movies'], response_model=Movie, status_code=status.HTTP_200_OK)
 def get_movie(id: int=Path(ge=1, le=200)) -> Movie:
-    for movie in movies:
-        if movie["id"] == id:
-            return JSONResponse(status_code=status.HTTP_200_OK, content=movie)
-    return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"message": "Couldn't find your movie, try another id"})
+    db = Session()
+    result = db.query(MovieModel).filter(MovieModel.id == id).first()
+    if not result:
+        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"message": "Couldn't find your movie, try another id"})
+
+    return JSONResponse(status_code=status.HTTP_200_OK, content=jsonable_encoder(result))
+    
 
 
 #get a movie by category
 @app.get('/movies/', tags=['movies'], response_model=List[Movie], status_code=status.HTTP_200_OK)#to diferenciate from movies, just add an "/" at the end of the name
-def get_movie_by_category(category: str = Query(min_length=4, max_length=15)) -> List[Movie]:#if I define on the function a parameter but not in the decorator, then automatically is defined as a query request
-    movie = list(filter(lambda movie: movie["category"] == category, movies))
-    return JSONResponse(status_code=status.HTTP_200_OK, content=movie)
+def get_movie_by_category(category: str = Query(min_length=2, max_length=15)) -> List[Movie]:#if I define on the function a parameter but not in the decorator, then automatically is defined as a query request
+    db = Session()
+    result = db.query(MovieModel).filter(MovieModel.category == category).all()
+    return JSONResponse(status_code=status.HTTP_200_OK, content=jsonable_encoder(result))
 
 
 #Create a new movie
@@ -114,27 +121,36 @@ def create_movie(movie: Movie) -> dict:
 #Modify an existing movie
 @app.put('/movies/{id}',  tags=['movies'], response_model=dict, status_code=status.HTTP_200_OK)
 def update_movie(id:int, movie: Movie) ->dict:
-    for mov in movies:
-        if mov["id"] == id:
-            mov["title"] = movie.title
-            mov["overview"] = movie.overview
-            mov["year"] = movie.year
-            mov["rating"] = movie.rating
-            mov["category"] = movie.category
-
-            return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Changes saved successfully"})
+    db =Session()
+    result = db.query(MovieModel).filter(MovieModel.id == id).first()
+    if not result:
+        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"message": "Movie doesn't exist, please verify your id"})
     
-    return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"message": "Movie doesn't exist, please verify your id"})
+    result.title = movie.title
+    result.overview = movie.overview
+    result.year = movie.year
+    result.rating = movie.rating
+    result.category = movie.category
+    db.commit()
+
+    return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Changes saved successfully"})
+    
+    
 
 
 #Delete a movie by id
 @app.delete('/movies/{id}', tags=['movies'], response_model=dict, status_code=status.HTTP_200_OK)
 def delete_movie(id:int) -> dict:
-    for movie in movies:
-        if movie["id"] == id:
-            movies.remove(movie)
-            return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Movie deleted successfully!"})
+    db =Session()
+    result = db.query(MovieModel).filter(MovieModel.id == id).first()
+    if not result:
+        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"message": "Movie doesn't exist, please verify your id"})
+    db.delete(result)
+    db.commit()
+    return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Movie deleted successfully!"})
         
+
+
 @app.post('/login', tags=['auth'])
 def login(user:User):
     if user.email == "admin@gmail.com" and user.password == "admin":
