@@ -1,0 +1,28 @@
+Configuren el puerto en el que se ejecutará la aplicación
+
+
+    #En el archivo main.py agregan 
+    #Deben importar os y uvicorn
+    if __name__ == "__main__":
+        uvicorn.run("main:app", host="0.0.0.0", port=int(os.environ.get("PORT", 8000)))
+
+
+Railway usa python 3.8 por lo que deben modificar el archivo “error_handler” y modificar el código:
+
+    #Deben importar 
+    from typing import Union
+
+    #Reemplazar 
+    Response | JSONResponse
+
+    #usar
+    Union[Response, JSONResponse]
+
+
+-> Creen su cuenta en Railway
+-> Vinculen github
+-> New Project -> Deploy form github repo
+-> Colocan el nombre del repositorio
+-> Una vez les avisa que se hizo el deploy van a Settings
+-> Generan la URL del dominio
+-> Listo -> Habemus API en línea
