@@ -7,6 +7,7 @@ from typing import Optional, List
 from config.database import Session
 from models.movie import Movie as MovieModel
 from middleware.jwt_bearer import JWTBearer
+from services.movie import MovieService
 
 movie_router = APIRouter()
 
@@ -35,7 +36,7 @@ class Movie(BaseModel):
 @movie_router.get('/movies', tags=['movies'], response_model=List[Movie], status_code=status.HTTP_200_OK, dependencies=[Depends(JWTBearer())])
 def get_movies() -> List[Movie]:
     db =Session()
-    result = db.query(MovieModel).all()
+    result = MovieService(db).get_movies()
     return JSONResponse(status_code=status.HTTP_200_OK, content=jsonable_encoder(result))
 
 
@@ -43,7 +44,7 @@ def get_movies() -> List[Movie]:
 @movie_router.get('/movies/{id}', tags=['movies'], response_model=Movie, status_code=status.HTTP_200_OK, dependencies=[Depends(JWTBearer())])
 def get_movie(id: int=Path(ge=1, le=200)) -> Movie:
     db = Session()
-    result = db.query(MovieModel).filter(MovieModel.id == id).first()
+    result = MovieService(db).get_movie(id)
     if not result:
         return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"message": "Couldn't find your movie, try another id"})
 
@@ -55,7 +56,7 @@ def get_movie(id: int=Path(ge=1, le=200)) -> Movie:
 @movie_router.get('/movies/', tags=['movies'], response_model=List[Movie], status_code=status.HTTP_200_OK, dependencies=[Depends(JWTBearer())])#to diferenciate from movies, just add an "/" at the end of the name
 def get_movie_by_category(category: str = Query(min_length=2, max_length=15)) -> List[Movie]:#if I define on the function a parameter but not in the decorator, then automatically is defined as a query request
     db = Session()
-    result = db.query(MovieModel).filter(MovieModel.category == category).all()
+    result = MovieService(db).get_movie_by_category(category)
     return JSONResponse(status_code=status.HTTP_200_OK, content=jsonable_encoder(result))
 
 
