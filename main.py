@@ -5,7 +5,7 @@ from typing import Optional, List
 from jwt_manager import create_token, validate_token
 from fastapi.security import HTTPBearer
 from config.database import Session, engine, Base
-from models.movie import Movie
+from models.movie import Movie as MovieModel
 
 app = FastAPI()
 app.title = "First FastAPI App " #Here we select the title of our App
@@ -100,8 +100,14 @@ def get_movie_by_category(category: str = Query(min_length=4, max_length=15)) ->
 #Create a new movie
 @app.post('/movies', tags=['movies'], response_model=dict, status_code=status.HTTP_200_OK)
 def create_movie(movie: Movie) -> dict:
-    movies.append(movie)
-
+    # Paso 1
+    db = Session()
+   # Paso 2
+    new_movie = MovieModel(**movie.dict())
+   # Paso 3
+    db.add(new_movie)
+  # Paso 4
+    db.commit()
     return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Movie created successfully!"})
 
 
